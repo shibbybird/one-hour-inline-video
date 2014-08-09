@@ -86,7 +86,7 @@ window.OneHourInlineVideo = (function(){
         },
 
         stop: function(){
-
+            this.video.pause();
         },
 
         destroy: function(){
