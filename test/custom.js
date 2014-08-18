@@ -2,7 +2,7 @@
 
 
     var inlineVid = new InlineVideo( '#hack-video' , {
-        url: (window.location.href + 'big_buck_bunny/manifest.json')
+        url: (window.location.href + '/video/big_buck_bunny/manifest.json')
     });
     
     inlineVid.play();

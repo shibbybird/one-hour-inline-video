@@ -8,12 +8,12 @@
 
 
     var SERVER = 'http://10.10.28.82:8888';
-    var PATH = '/live/big_buck_bunny/';
+    var PATH = '/live/video/big_buck_bunny/';
 
 
     var vidInfo = {
         file: '/Users/bmcmanus/Downloads/big_buck_bunny.mp4',
-        dir: '/Users/bmcmanus/one-hour-inline-video/test/big_buck_bunny/',
+        dir: '/Users/bmcmanus/one-hour-inline-video/test/video/big_buck_bunny/',
         fps: 7
     };
 
