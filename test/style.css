@@ -1,0 +1,79 @@
+div,
+img,
+a,
+button,
+input
+{
+    -webkit-tap-highlight-color: rgba(255,255,255,0);
+    outline: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    background-color: #4E5658;
+}
+
+#hack-video {
+    width: 300px;
+    height: 169px;
+    background-color: #fff;
+}
+
+#status {
+    font-weight: bold;
+    position: relative;
+    width: 280px;
+    height: 15px;
+    background-color: #fff;
+    margin-top: 10px;
+    padding: 10px;
+    overflow: hidden;
+}
+
+#status .text {
+    float: left;
+    background-color: rgba(0,0,255,0.3);
+}
+
+#status .time {
+    float: right;
+    background-color: rgba(255,0,0,0.3);
+}
+
+#start {
+    height: 50px;
+    width: 120px;
+}
+
+#stop {
+    margin-left: 57px;
+    height: 50px;
+    width: 120px;
+}
+
+#start,
+#stop
+{
+    position: relative;
+    margin-top: 10px;
+    z-index: 2;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

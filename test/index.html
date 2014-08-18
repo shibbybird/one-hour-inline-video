@@ -1,49 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head lang="en">
-    <meta charset="UTF-8">
-    <title></title>
-    <style>
-        #start{
-            height: 50px;
-            width: 120px;
-        }
-
-        #stop{
-            margin-left: 57px;
-            height: 50px;
-            width: 120px;
-        }
-    </style>
+    <meta name="viewport"
+        content=
+            "width=device-width,
+            initial-scale=1,
+            minimum-scale=1,
+            maximum-scale=1,
+            user-scalable=no,
+            minimal-ui"
+    >
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <title>One Hour Inline Video</title>
+    <!-- ============================================= -->
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <!-- ============================================= -->
+    <!--
+    <script src="http://code.jquery.com/jquery-2.0.2.min.js"></script>
+    <script src="http://cdn.bfmiv.com/hx-1.0.3.min.js"></script>
+    -->
+    <!-- [scripts] -->
+    <!-- ============================================= -->
 </head>
 <body>
+
     <div id="hack-video"></div>
-    <script src="../src/core.js"></script>
+    <div id="status">
+        <div class="text"></div>
+        <div class="time"></div>
+    </div>
     <button id="start">START</button>
     <button id="stop">STOP</button>
-    <script>
 
-        var options = {
-            url: 'http://www.quirksmode.org/html5/videos/big_buck_bunny.mp4',
-            videoContainerId: "hack-video",
-            width: 300,
-            height: 200
-        };
+    <script src="custom.js"></script>
 
-        var inlineVideo = new OneHourInlineVideo(options);
-        inlineVideo.play();
-
-        var start = document.getElementById('start');
-        var stop = document.getElementById('stop');
-
-        start.addEventListener('click', function(){
-            inlineVideo.play();
-        });
-
-        stop.addEventListener('click', function(){
-            inlineVideo.stop();
-        });
-
-    </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
