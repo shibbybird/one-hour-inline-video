@@ -54,8 +54,6 @@ InlineVideo.TimingMOJO = (function( Object , MOJO , requestAnimationFrame ) {
 
             var that = this;
 
-            //console.log(timestamp);
-
             that.happen( TIMING , timestamp );
 
             if (that[SUBSCRIBERS] < 1) {

@@ -68,8 +68,6 @@ InlineVideo.Buffer = (function( Object , MOJO , InlineVideo ) {
 
             getJSON( url , function( response ) {
                 
-                console.log(response);
-
                 var origin = response.origin;
                 var path = response.path;
                 var frames = response.frames;
@@ -113,7 +111,7 @@ InlineVideo.Buffer = (function( Object , MOJO , InlineVideo ) {
                     that.happen( 'bufferProgress' , 0 );
                     that.dispel();
                     that.queue.forEach(function( frameset ) {
-                        frameset.dispel();
+                        frameset.destroy();
                     });
                 break;
 

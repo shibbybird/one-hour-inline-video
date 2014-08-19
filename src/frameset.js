@@ -78,7 +78,8 @@ InlineVideo.Frameset = (function( Object , Promise , MOJO ) {
 
         destroy: function() {
             var that = this;
-            console.log(that.handlers);
+            that.dispel();
+            that.frames = [];
             return that;
         },
 
@@ -114,14 +115,12 @@ InlineVideo.Frameset = (function( Object , Promise , MOJO ) {
 
     function loadImage( src , callback ) {
         return new Promise(function( resolve ) {
-            //setTimeout(function() {
-                var img = new Image();
-                img.onload = function() {
-                    callback( img );
-                    resolve();
-                };
-                img.src = src + '?r=' + Date.now();
-            //}, Math.round(Math.random() * 2300 ));
+            var img = new Image();
+            img.onload = function() {
+                callback( img );
+                resolve();
+            };
+            img.src = src + '?r=' + Date.now();
         });
     }
 

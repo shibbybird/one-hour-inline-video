@@ -154,13 +154,11 @@ window.InlineVideo = (function( Object , document , MOJO ) {
                 break;
 
                 case 'videoLoaded':
-                    //that.dispel( 'abort' );
                     that.set( READYSTATE , 3 );
                 break;
 
                 case VIDEO_END:
                     that.stop();
-                    console.log(that);
                 break;
 
                 case 'JSONResponse':
@@ -181,12 +179,9 @@ window.InlineVideo = (function( Object , document , MOJO ) {
                 break;
 
                 case 'framesetLoaded':
-                    
                     frameset = args[1];
                     frameindex = args[2];
                     queue[frameindex] = frameset;
-
-                    //console.log(that.queueLength);
                 break;
 
                 case 'framesetComplete':
@@ -256,9 +251,7 @@ window.InlineVideo = (function( Object , document , MOJO ) {
             that.frameProgress = 0;
             that.playing = false;
             
-            //if (that.readyState < 3) {
-                that.destroy();
-            //}
+            that.destroy();
 
             TimingMOJO.unsubscribe( that );
         },

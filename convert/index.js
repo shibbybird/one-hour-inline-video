@@ -14,7 +14,7 @@
     var vidInfo = {
         file: '/Users/bmcmanus/Downloads/big_buck_bunny.mp4',
         dir: '/Users/bmcmanus/one-hour-inline-video/test/video/big_buck_bunny/',
-        fps: 7
+        fps: 20
     };
 
 
@@ -173,12 +173,6 @@
                 }
             }
         });
-
-        /*Object.defineProperty( that , 'destination' , {
-            get: function() {
-                return dir + 'manifest.json';
-            }
-        });*/
     }
 
 
