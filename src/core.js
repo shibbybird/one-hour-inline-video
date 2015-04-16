@@ -1,101 +1,321 @@
-/**
- * Created by lwilson on 8/8/14.
- */
+window.InlineVideo = (function( Object , document , MOJO ) {
 
-window.OneHourInlineVideo = (function(){
+
+    var STATEMAP = [ 'not ready' , 'buffering' , 'ready' , 'loaded' ];
+    var CORE_PROGRESS = 'coreProgress';
+    var READYSTATE = 'readyState';
+    var VIDEO_END = 'videoEnd';
+    var BUFFER = 'buffer';
+    var SET = 'set';
+    var TIC = 'tic';
+
+
+    function PRIVATE_EVENTS() {
+        return [ SET , VIDEO_END , CORE_PROGRESS ];
+    }
+
+
+    var TimingMOJO;
+    var Buffer;
+    var Audio;
+
 
     /**
+     *
+     * @param selector
+     * "#hack-video"
      *
      * @param options
      * {
      *  url: "http://video.com/video.mp4",
-     *  videoContainerId: "hack-video",
      *  width: "600",
-     *  height: "400",
-     *  timingCallback: "function(){}"
+     *  height: "400"
      * }
      * @constructor
      */
 
-    var InlineVideo = function(options){
+    
+    function InlineVideo( selector , options ) {
 
-        this._buildVideo(options);
+        options = options || {};
 
+        var that = this;
+
+        that.index = 0;
+        that.frameProgress = 0;
+        that.queue = [];
+        that.duration = null;
+        that.playing = false;
+        that[READYSTATE] = 0;
+
+        var bufferOptions = {
+            min: 2
+        };
+
+        MOJO.Construct( that );
+
+        Object.defineProperties( that , {
+
+            queueLength: {
+                get: function() {
+                    return Object.keys( that.queue ).length;
+                }
+            },
+
+            elapsed: {
+                get: function() {
+                    return Math.round(( that.index + that.frameProgress ) * 1000 );
+                }
+            }
+        });
+
+        that.load( options.url , bufferOptions );
+        that._init( selector , options );
     }
 
-    InlineVideo.prototype = {
 
-        _buildVideo: function(options){
-            var canvas, context, videoElement, video, videoContainer, self = this;
+    InlineVideo.Init = function() {
+        TimingMOJO = InlineVideo.TimingMOJO;
+        Buffer = InlineVideo.Buffer;
+        Audio = InlineVideo.Audio;
+    };
 
-            if ( typeof options.videoContainerId != "undefined") {
-                videoContainer = document.getElementById(options.videoContainerId);
-            } else {
-                console.log("videoContainerId not defined or found")
-                throw "AHHH!";
+
+    InlineVideo.prototype = MOJO.Create({
+
+        _init: function( selector , options ) {
+
+            var that = this;
+            var videoContainer = document.querySelector( selector );
+            var bcr = videoContainer.getBoundingClientRect();
+
+            var width = options.width || bcr.width;
+            var height = options.height || bcr.height;
+
+            var canvas = createCanvas( width , height );
+            var context = canvas.getContext( '2d' );
+
+            // this should decrease the system load a bit
+            context.webkitImageSmoothingEnabled = false;
+
+            videoContainer.appendChild( canvas );
+
+            that.width = width;
+            that.height = height;
+            that.canvas = canvas;
+            that.context = context;
+            that.videoContainer = videoContainer;
+        },
+
+        load: function( url , bufferOptions ) {
+
+            var that = this;
+
+            that.url = url || that.url;
+            that.bufferOptions = that.bufferOptions || bufferOptions;
+
+            if (!that.url) {
+                return;
             }
 
+            var buffer = new InlineVideo.Buffer( that.url , that.bufferOptions )
+                .once( 'JSONResponse videoLoaded' , that )
+                .when( 'framesetLoaded framesetComplete bufferProgress bufferReady' , that );
 
+            that
+                .when([ SET , VIDEO_END ] , that )
+                .when( CORE_PROGRESS , buffer )
+                .once( 'abort' , buffer );
 
-            canvas = document.createElement("canvas");
-            canvas.height = options.height;
-            canvas.width = options.width;
-            context = canvas.getContext("2d");
-
-            video = document.createElement('video');
-            video.src = options.url;
-            video.width = options.width;
-            video.height = options.height;
-
-
-            videoContainer.appendChild(canvas);
-
-            video.addEventListener('play', function(){
-                self.__canvasDraw();
-            }, false);
-
-            this.video = video;
-            this.canvas = canvas;
-            this.context = context;
-            this.videoContainer = videoContainer;
-
-
+            that.set( READYSTATE , 1 );
         },
 
-        play: function(){
+        handleMOJO: function( e ) {
 
-            this.video.play();
+            var that = this;
+            var args = arguments;
+            var queue = that.queue;
+            var key, state, frameset, coreindex, frameindex, duration, progress;
 
+            switch (e.type) {
+
+                case 'set':
+
+                    key = args[1];
+
+                    if (key === READYSTATE) {
+                        state = STATEMAP[that[key]];
+                        that.happen( key , [ state , that[key] ]);
+                    }
+                break;
+
+                case 'timing':
+                    that._timing.apply( that , args );
+                break;
+
+                case 'videoLoaded':
+                    that.set( READYSTATE , 3 );
+                break;
+
+                case VIDEO_END:
+                    that.stop();
+                break;
+
+                case 'JSONResponse':
+                    duration = args[1];
+                    that.duration = duration;
+                    that.set( READYSTATE , 1 );
+                break;
+
+                case 'bufferProgress':
+                    progress = args[1];
+                    that.happen( BUFFER , progress );
+                break;
+
+                case 'bufferReady':
+                    if (that.readyState < 2) {
+                        that.set( READYSTATE , 2 );
+                    }
+                break;
+
+                case 'framesetLoaded':
+                    frameset = args[1];
+                    frameindex = args[2];
+                    queue[frameindex] = frameset;
+                break;
+
+                case 'framesetComplete':
+                    frameset = args[1];
+                    coreindex = that.index;
+                    if (frameset === queue[coreindex]) {
+                        queue[coreindex] = null;
+                        coreindex++;
+                        that.happen( CORE_PROGRESS , frameset );
+                        var seconds = Math.round( that.elapsed / 1000 );
+                        that.happen( TIC , [ seconds , that.duration ]);
+                    }
+                    that.index = coreindex;
+                break;
+            }
         },
 
-        __canvasDraw: function(){
+        _timing: function( e , timestamp ) {
 
-            var video = this.video;
-            var self = this;
+            var that = this;
 
-            if(video.paused || video.ended){
-                return false;
+            if (!that.playing) {
+                return;
             }
 
-            this.context.drawImage( video, 0, 0, video.width, video.height );
+            var index = that.index;
+            var queue = that.queue;
+            var current = that.queue[index];
 
-            setTimeout(function(){
-                self.__canvasDraw();
-            })
+            if (!current) {
+                if (queue.length === that.duration) {
+                    that.happen( VIDEO_END );
+                }
+                else if (that.readyState > 1) {
+                    that.set( READYSTATE , 1 );
+                }
+                return;
+            }
 
+            var frame = current.requestFrame( timestamp );
+
+            if (frame) {
+                that.frameProgress = current.percent;
+                that._paint( frame );
+            }
         },
 
-        stop: function(){
-            this.video.pause();
+        play: function() {
+            
+            var that = this;
+
+            if (!that[READYSTATE]) {
+                that.load();
+            }
+
+            if (!that.playing) {
+                that.playing = true;
+                TimingMOJO.subscribe( that );
+            }
         },
 
-        destroy: function(){
+        stop: function() {
 
+            var that = this;
+
+            that.index = 0;
+            that.frameProgress = 0;
+            that.playing = false;
+            
+            that.destroy();
+
+            TimingMOJO.unsubscribe( that );
+        },
+
+        _paint: function( img ) {
+
+            var that = this;
+            var context = that.context;
+            var width = that.width;
+            var height = that.height;
+
+            context.clearRect( 0 , 0 , width , height );
+            context.drawImage( img , 0 , 0 , width , height );
+        },
+
+        destroy: function() {
+            var that = this;
+            that.queue = [];
+            that.duration = null;
+            that.happen( 'abort' );
+            that.set( READYSTATE , 0 );
+            that.dispel(
+                PRIVATE_EVENTS()
+            );
         }
+    });
 
+
+    function createCanvas( width , height ) {
+        var canvas = document.createElement( 'canvas' );
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
     }
 
 
     return InlineVideo;
 
-})()
+
+}( Object , document , MOJO ));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
